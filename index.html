@@ -12,7 +12,7 @@
             background-color: #F8F9FA; /* Very Light Grey/Off-white */
         }
         .table-container {
-            max-height: 600px; /* Default max height */
+            max-height: 600px;
             overflow-y: auto;
         }
         th, td {
@@ -39,15 +39,18 @@
         }
         .editable-cell.responsible-cell { 
             min-width: 150px;
+            font-weight: 700; /* Bolden the text for this specific column */
         }
         .editable-cell:empty::before {
             content: "أدخل القيمة..."; 
             color: #6C757D; 
             font-style: italic;
             opacity: 0.7;
+            font-weight: 500; /* Ensure placeholder is not bold if cell is empty */
         }
         .editable-cell.responsible-cell:empty::before {
             content: "أدخل المسؤول..."; 
+            font-weight: 500; /* Ensure placeholder is not bold if cell is empty */
         }
         .editable-cell:focus {
             outline: 2px solid #174FED; 
@@ -57,8 +60,8 @@
             background-color: white;
             border-radius: 0.5rem; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            padding: 1rem; /* Reduced padding for mobile-first */
-            margin-bottom: 1rem; /* Reduced margin for mobile-first */
+            padding: 1rem; 
+            margin-bottom: 1rem; 
             border: 1px solid #DEE2E6;
         }
         .header-brand {
@@ -107,7 +110,7 @@
             margin: 10% auto; 
             padding: 20px;
             border: 1px solid #888;
-            width: 90%; /* Increased width for mobile */
+            width: 90%; 
             max-width: 700px;
             border-radius: 0.5rem;
             position: relative;
@@ -129,22 +132,21 @@
         }
         #exportDataTextArea {
             width: 100%;
-            min-height: 150px; /* Reduced height for mobile */
+            min-height: 150px; 
             margin-top: 10px;
             font-family: monospace;
-            font-size: 0.75rem; /* Smaller font for mobile */
+            font-size: 0.75rem; 
             direction: ltr; 
             text-align: left;
         }
 
-        /* Responsive Table Styles */
         @media (max-width: 768px) {
             .table-container {
-                max-height: none; /* Allow full height on mobile if needed, or set specific vh */
+                max-height: none; 
                 overflow-y: visible;
             }
             table thead {
-                display: none; /* Hide table headers on mobile */
+                display: none; 
             }
             table tr {
                 display: block;
@@ -156,32 +158,35 @@
                 box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }
             table td {
-                display: flex; /* Use flex for label-value alignment */
-                justify-content: space-between; /* Label on right, value on left */
-                align-items: center; /* Vertically center label and value */
-                padding: 0.6rem 0.25rem; /* Adjusted padding */
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                padding: 0.6rem 0.25rem; 
                 text-align: right; 
                 border-bottom: 1px dotted #E9ECEF; 
-                font-size: 0.875rem; /* Slightly smaller font for table data on mobile */
+                font-size: 0.875rem; 
             }
             table td:last-child {
                 border-bottom: none;
             }
             table td::before {
-                content: attr(data-label); /* Display the label */
+                content: attr(data-label); 
                 font-weight: 600;
-                color: #12368F; /* Header color for labels */
-                margin-left: 0.75rem; /* Space between label and value */
+                color: #12368F; 
+                margin-left: 0.75rem; 
                 white-space: nowrap;
-                flex-shrink: 0; /* Prevent label from shrinking */
+                flex-shrink: 0; 
             }
             .editable-cell { 
-                min-width: 0; /* Reset min-width for stacked view */
-                flex-grow: 1; /* Allow value to take remaining space */
-                text-align: left; /* Align editable value to the left */
+                min-width: 0; 
+                flex-grow: 1; 
+                text-align: left; 
             }
-            .editable-cell:empty::before { /* Adjust placeholder for mobile */
-                text-align: right; /* Align placeholder text to the right */
+            .editable-cell.responsible-cell {
+                 font-weight: 700; /* Ensure bold text on mobile too */
+            }
+            .editable-cell:empty::before { 
+                text-align: right; 
             }
              .card {
                 padding: 1rem;
@@ -193,8 +198,8 @@
             .button-group button {
                 width: 100%;
             }
-            h1 { font-size: 1.875rem; /* 30px */ }
-            h2 { font-size: 1.25rem; /* 20px */ }
+            h1 { font-size: 1.875rem; }
+            h2 { font-size: 1.25rem; }
         }
     </style>
 </head>
@@ -273,8 +278,8 @@
                 <table class="min-w-full bg-white">
                     <thead class="text-xs md:text-sm">
                         <tr>
-                            <th class="px-2 md:px-3 py-2 md:py-3">الرقم التسلسلي</th>
-                            <th class="px-2 md:px-3 py-2 md:py-3">الفئة</th>
+                            <th class="px-2 md:px-3 py-2 md:py-3">رقم البند</th>
+                            <th class="px-2 md:px-3 py-2 md:py-3">البند</th>
                             <th class="px-2 md:px-3 py-2 md:py-3">وحدة القياس</th>
                             <th class="px-2 md:px-3 py-2 md:py-3">الكمية في السنة 1</th>
                             <th class="px-2 md:px-3 py-2 md:py-3">الكمية في السنة 2</th>
@@ -290,7 +295,6 @@
         </div>
     </div>
 
-    <!-- Export Data Modal -->
     <div id="exportModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeExportModalButton">&times;</span>
@@ -410,7 +414,7 @@
         ];
 
         let tableData = []; 
-        let tableHeaders = []; // To store header texts for data-labels
+        let tableHeaders = []; 
 
         const tableBody = document.getElementById('projectTableBody');
         const resetDataButton = document.getElementById('resetDataButton');
@@ -514,7 +518,7 @@
             cell.textContent = content;
             let baseClasses = 'px-3 py-3 border-b border-gray-200';
             cell.className = `${baseClasses} ${customClasses}`;
-            cell.setAttribute('data-label', dataLabel); // Set data-label for mobile view
+            cell.setAttribute('data-label', dataLabel); 
             
             if (isEditable) {
                 cell.contentEditable = true;
@@ -554,7 +558,6 @@
         }
 
         function populateTable() {
-            // Get header texts for data-labels
             const headerElements = document.querySelectorAll('.table-container table thead th');
             tableHeaders = Array.from(headerElements).map(th => th.textContent.trim());
 
@@ -577,7 +580,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadDataFromLocalStorage();
-            populateTable(); // This will now also set data-labels
+            populateTable(); 
             if(resetDataButton) {
                 resetDataButton.addEventListener('click', handleResetData);
             }
