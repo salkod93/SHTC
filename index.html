@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملخص نطاق عمل المشروع وجدول الكميات والمسؤوليات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #F8F9FA; /* Very Light Grey/Off-white */
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom-width: 1px;
+            border-color: #DEE2E6; /* Light Gray for borders */
+            vertical-align: top;
+        }
+        th {
+            background-color: #E9ECEF; /* Lighter Gray for table headers */
+            color: #12368F; /* Dark Blue from guide */
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .editable-cell {
+            background-color: #FFFFFF; 
+            cursor: pointer;
+            min-width: 100px; /* Adjusted min-width for quantity cells */
+            font-weight: 500;
+            color: #212529; /* Darker text for content */
+        }
+        .editable-cell.responsible-cell { /* Specific class for responsible person cell */
+            min-width: 150px;
+        }
+        .editable-cell:empty::before {
+            content: "أدخل القيمة..."; /* Generic placeholder */
+            color: #6C757D; /* Medium Gray for placeholder */
+            font-style: italic;
+            opacity: 0.7;
+        }
+        .editable-cell.responsible-cell:empty::before {
+            content: "أدخل المسؤول..."; /* Specific placeholder for responsible person */
+        }
+        .editable-cell:focus {
+            outline: 2px solid #174FED; /* Medium Blue from guide for focus */
+            background-color: #E7F0FE; /* Light blue tint for focus */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem; /* Slightly less rounded */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Softer shadow */
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #DEE2E6;
+        }
+        .header-brand {
+            color: #12368F; /* Dark Blue from guide */
+        }
+        .text-muted-brand {
+            color: #6C757D; /* Standard muted gray */
+        }
+        .section-title {
+            color: #12368F; /* Dark Blue for section titles */
+            border-bottom: 2px solid #00D9E3; /* Sky Blue accent for border */
+        }
+        .list-strong-text {
+            color: #12368F; /* Dark Blue */
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #F8F9FA;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #B2BABD; /* Light Grey from guide */
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #6C757D; /* Darker Grey on hover */
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: left; /* For RTL */
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #exportDataTextArea {
+            width: 100%;
+            min-height: 200px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            direction: ltr; /* Keep JSON LTR for easy copying */
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto max-w-7xl">
+        
+        <header class="mb-10 pt-8 text-center"> 
+            <h1 class="text-3xl md:text-4xl font-bold header-brand">ملخص نطاق عمل المشروع وجدول الكميات والمسؤوليات</h1>
+            <p class="text-lg text-muted-brand mt-2">تطوير الثقافة التنظيمية وتحسين بيئة العمل بوزارة الدفاع</p>
+            <p class="text-md text-muted-brand mt-1"><strong>مدة المشروع:</strong> (3) سنوات</p>
+        </header>
+
+        <div class="card">
+            <h2 class="text-2xl font-semibold mb-5 pb-2 section-title">ملخص نطاق عمل المشروع:</h2>
+            <div class="space-y-3 text-muted-brand">
+                <p>يهدف هذا المشروع إلى تطوير الثقافة التنظيمية وتحسين بيئة العمل في وزارة الدفاع من خلال عدة محاور رئيسية:</p>
+                <ol class="list-decimal list-inside space-y-2 pr-5">
+                    <li>
+                        <strong class="list-strong-text">قياس الأثر وتقييم الأداء:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>دراسة الثقافة التنظيمية الحالية وتطبيق مؤشر صحة بيئة العمل (OHBI).</li>
+                            <li>تحليل شخصية الموظفين وتحديد نقاط القوة والضعف والفرص والمخاطر.</li>
+                            <li>تقديم تقارير دورية (ربع سنوية، نصف سنوية، سنوية) تتضمن التحليلات والتوصيات والخطط التصحيحية.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="list-strong-text">تقييم وتطوير الخطط الاستراتيجية للثقافة التنظيمية:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>تقييم وتطوير الخطة الاستراتيجية للتوعية والتثقيف المتعلقة بالثقافة التنظيمية.</li>
+                            <li>تقديم الدعم اللوجستي لتنفيذ حملات توعوية وتثقيفية متكاملة.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="list-strong-text">تقييم وتطوير برامج ومبادرات الاندماج الوظيفي:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>تقييم وتطوير الخطة الاستراتيجية لبرامج ومبادرات الاندماج الوظيفي العامة.</li>
+                            <li>قياس أثر برامج الاندماج وتقديم الدعم بالخطط التصحيحية.</li>
+                            <li>تقديم الدعم اللوجستي للبرامج والمبادرات التي تعزز الاندماج الوظيفي.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="list-strong-text">تقييم وتطوير برامج التهيئة والتثقيف للمنضمين حديثًا:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>تقييم وتطوير خطة برامج التهيئة التوعوية والتثقيفية للموظفين الجدد.</li>
+                            <li>تقديم الدعم اللوجستي لتنفيذ البرامج والندوات الثقافية المعززة لاندماج الموظفين الجدد.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="list-strong-text">تقييم وتطوير إجراءات تنفيذ الندوات وورش العمل:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>تقييم وتطوير إجراءات تنفيذ الندوات التوعوية والثقافية وورش العمل الداخلية والخارجية.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="list-strong-text">تقييم وتطوير المواد الإعلامية الداعمة للتوعية والتثقيف:</strong>
+                        <ul class="list-disc list-inside space-y-1 pr-5 mt-1 text-sm">
+                            <li>تقييم وتطوير آليات إنتاج المواد الإعلامية (منشورات، موشن جرافيك، انفوجرافيك، أفلام توعوية).</li>
+                            <li>تطوير محتوى إعلامي يعكس القيم المؤسسية ويعزز الثقافة التنظيمية والاندماج الوظيفي.</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-semibold mb-6 pb-2 section-title">جدول الكميات والأسعار والمسؤوليات:</h2>
+            <div class="flex justify-between items-center mb-3">
+                 <button id="exportDataButton" class="bg-[#00D9E3] hover:bg-[#00B8C0] text-[#12368F] font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-150">
+                    تصدير بيانات الجدول الحالية
+                </button>
+                 <button id="resetDataButton" class="bg-[#174FED] hover:bg-[#12368F] text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-150">
+                    إعادة تعيين البيانات للافتراضي
+                </button>
+            </div>
+            <div class="table-container shadow-sm rounded-lg border border-gray-200">
+                <table class="min-w-full bg-white">
+                    <thead class="text-sm">
+                        <tr>
+                            <th class="w-auto px-3 py-3">الرقم التسلسلي</th>
+                            <th class="w-2/12 px-3 py-3">الفئة</th>
+                            <th class="w-4/12 px-3 py-3">البند</th>
+                            <th class="w-auto px-3 py-3">وحدة القياس</th>
+                            <th class="w-auto px-3 py-3">الكمية في السنة 1</th>
+                            <th class="w-auto px-3 py-3">الكمية في السنة 2</th>
+                            <th class="w-auto px-3 py-3">الكمية في السنة 3</th>
+                            <th class="w-3/12 px-3 py-3 header-brand font-bold">المسؤول عن التنفيذ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectTableBody" class="text-muted-brand text-sm">
+                        </tbody>
+                </table>
+            </div>
+             <p class="mt-4 text-xs text-muted-brand">ملاحظة: يمكنك النقر على خلايا الكميات وخلايا "المسؤول عن التنفيذ" لتعديل محتواها. يتم حفظ التغييرات تلقائيًا في متصفحك.</p>
+        </div>
+    </div>
+
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeExportModalButton">&times;</span>
+            <h3 class="text-xl font-semibold mb-3 header-brand">تصدير بيانات الجدول الحالية</h3>
+            <p class="text-sm text-muted-brand mb-2">
+                لجعل هذه البيانات هي البيانات الافتراضية الدائمة في ملف HTML، قم بنسخ النص التالي بالكامل. ثم افتح ملف HTML الخاص بك في محرر نصوص، وابحث عن مصفوفة `const defaultTableData = [` واستبدل محتواها (ما بين القوسين المربعين `[` و `]`) بهذا النص المنسوخ.
+            </p>
+            <textarea id="exportDataTextArea" readonly></textarea>
+            <button id="copyExportDataButton" class="mt-3 bg-[#174FED] hover:bg-[#12368F] text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-150">
+                نسخ البيانات
+            </button>
+            <p id="copyStatus" class="text-sm text-[#61BD38] mt-2" style="display:none;">تم النسخ بنجاح!</p>
+        </div>
+    </div>
+
+    <script>
+        const defaultTableData = [
+    {
+        "id": 1,
+        "category": "دعم الثقافة التنظيمية بدراسة الوضع الراهن وتحليل النتائج",
+        "item": "تطبيق آلية لقياس مؤشر صحة بيئة العمل (OHBI) وتحديد السمات الأساسية لمخرجات المؤشر، وتحليل شخصية الموظفين باستخدام أداة إحصائية تستخدم لتحليل البيانات رقميًا بأحدث الوسائل والتقنيات بشكل ربع سنوي، نصف سنوي، سنوي، لتحليل البيانات المستخلصة من عمليات التقييم وتقديم الدعم بالخطط التصحيحية لتحسين الأداء، وتحليل الفجوات الداخلية، وتحليل وضع الصورة الذهنية والمعرفية والعاطفية والسلوكية، وتحديد نقاط القوة والضعف والفرص والمخاطر وتقديم نتائج الدراسات متضمنة التحليل وتقرير للإجراءات الموصى بها والخطط التصحيحية لذلك.",
+        "unit": "دراسة/تقرير",
+        "qty1": 9,
+        "qty2": 8,
+        "qty3": 8,
+        "responsible": "شركة استشارية في مجال الموارد البشرية (عبر شركائنا في اسبانيا) تحت إدارة المركز السعودي للتدريب الصحي بالشراكة مع المعهد الوطني للسلامة والصحة المهنية كشريك محلي مشرف على توطين المخرج"
+    },
+    {
+        "id": 2,
+        "category": "تطوير الخطة الاستراتيجية لحملات التوعية والتثقيف",
+        "item": "تطوير الخطة الاستراتيجية للتوعية والتثقيف والخاصة بالثقافة التنظيمية استنادًا على المستهدفات، وفق أحدث الأساليب المتبعة للاستراتيجيات بما يتماشى مع سياسات وإجراءات ورؤية وزارة الدفاع، بشكل مستمر بناءً على نتائج القياس والتقييم الدوري.",
+        "unit": "تقرير",
+        "qty1": 1,
+        "qty2": 1,
+        "qty3": 1,
+        "responsible": "شركة استشارية في مجال الموارد البشرية (عبر شركائنا في اسبانيا) تحت إدارة المركز السعودي للتدريب الصحي بالشراكة مع المعهد الوطني للسلامة والصحة المهنية كشريك محلي مشرف على توطين المخرج"
+    },
+    {
+        "id": 3,
+        "category": "الدعم اللوجستي لحملات التوعية والتثقيف",
+        "item": "الدعم اللوجستي بتنفيذ نطاق عمل الخطط الاستراتيجية للحملات التوعوية والتثقيفية، من خلال تطوير وتنفيذ حملات توعوية متكاملة تعكس القيم والمبادئ التنظيمية، وإدارتها لضمان تحقيقها للأهداف المرجوة. وتطوير برامج التوعية والتثقيف لتعزيز الثقافة التنظيمية.",
+        "unit": "حملة",
+        "qty1": 4,
+        "qty2": 4,
+        "qty3": 4,
+        "responsible": "المركز السعودي للتدريب الصحي"
+    },
+    {
+        "id": 4,
+        "category": "تطوير الخطة الاستراتيجية لتعزيز الاندماج",
+        "item": "تطوير الخطة الاستراتيجية لبرامج ومبادرات الاندماج الوظيفي العامة، وفق أحدث الأساليب المتبعة في للاستراتيجيات بما يتماشى مع سياسات وإجراءات ورؤية وزارة الدفاع، وضمان استمرارية التحفيز وتعزيز الاندماج بمعالجة أي تحديات قد تؤثر على بيئة العمل.",
+        "unit": "تقرير",
+        "qty1": 1,
+        "qty2": 0,
+        "qty3": 0,
+        "responsible": "شركة استشارية في مجال الموارد البشرية (عبر شركائنا في اسبانيا) تحت إدارة المركز السعودي للتدريب الصحي بالشراكة مع المعهد الوطني للسلامة والصحة المهنية كشريك محلي مشرف على توطين المخرج"
+    },
+    {
+        "id": 5,
+        "category": "الدعم اللوجستي لبرامج تعزيز الاندماج الوظيفي",
+        "item": "الدعم اللوجستي للبرامج العامة والمبادرات التي تعزز الاندماج الوظيفي وترفع الروح المعنوية وتدعم عملية المحافظة على الموظفين، من خلال تنفيذ برامج داعمة داخل مقرات وزارة الدفاع.",
+        "unit": "برنامج",
+        "qty1": 10,
+        "qty2": 10,
+        "qty3": 10,
+        "responsible": "المركز السعودي للتدريب الصحي"
+    },
+    {
+        "id": 6,
+        "category": "تطوير خطة برامج التهيئة التوعوية والتثقيفية",
+        "item": "تقييم وتطوير الخطة الاستراتيجية لبرامج التهيئة التوعوية والتثقيفية للموظفين الجدد.",
+        "unit": "تقرير",
+        "qty1": 1,
+        "qty2": 0,
+        "qty3": 0,
+        "responsible": "شركة استشارية في مجال الموارد البشرية (عبر شركائنا في اسبانيا) تحت إدارة المركز السعودي للتدريب الصحي بالشراكة مع المعهد الوطني للسلامة والصحة المهنية كشريك محلي مشرف على توطين المخرج"
+    },
+    {
+        "id": 7,
+        "category": "الدعم اللوجستي لبرامج التهيئة التثقيفية",
+        "item": "الدعم اللوجستي لبرامج التوعوية المعززة لاندماج المنضمين حديثًا لضمان سرعة تقديم تجربة مميزة وجاذبة ومحفزة للعمل باستخدام أحدث الأساليب وغرس دور القادة في تعزيز الثقافة بأفضل الممارسات الداعمة والمتبعة والمعززة للتواصل الفعال.",
+        "unit": "برنامج",
+        "qty1": 10,
+        "qty2": 15,
+        "qty3": 15,
+        "responsible": "المركز السعودي للتدريب الصحي"
+    },
+    {
+        "id": 8,
+        "category": "تخطيط وتنظيم الندوات الثقافية وورش العمل الداخلية",
+        "item": "تخطيط وتنظيم الندوات التوعوية والثقافية وورش العمل الداخلية وفق أفضل الممارسات المتبعة لدعم أهداف النموذج التشغيلي داخل مقرات الوزارة.",
+        "unit": "ندوة",
+        "qty1": 5,
+        "qty2": 5,
+        "qty3": 10,
+        "responsible": "المركز السعودي للتدريب الصحي بالتعاون مع المعهد الوطني للسلامة والصحة المهنية "
+    },
+    {
+        "id": 9,
+        "category": "تخطيط وتنظيم الندوات الثقافية وورش العمل الخارجية",
+        "item": "تخطيط تنظيم الندوات التوعوية والثقافية وورش العمل خارج مباني وزارة الدفاع أو خارج منطقة الرياض لتعزيز التفاعل والتواصل الثقافي الخارجي والمحلي وفق أفضل الممارسات في الثقافة المؤسسية لتحسين التجربة المقدمة من خلال الإبداع والابتكار.",
+        "unit": "ندوة",
+        "qty1": 2,
+        "qty2": 2,
+        "qty3": 2,
+        "responsible": "المركز السعودي للتدريب الصحي بالتعاون مع المعهد الوطني للسلامة والصحة المهنية "
+    },
+    {
+        "id": 10,
+        "category": "تقييم وتطوير منشورات التوعية والتثقيف",
+        "item": "تقييم المواد الإعلامية المستخدمة وتطوير إنتاجها لدعم للتوعية والتثقيف، من خلال منشورات التوعية والتثقيف بالثقافة التنظيمية والاندماج الوظيفي وخدمات الموارد البشرية بالمنشورات والموشن جرافيك والإنفو جرافيك لدعم حملات التوعية بأسلوب مرئي جذاب.",
+        "unit": "منشور",
+        "qty1": 130,
+        "qty2": 130,
+        "qty3": 140,
+        "responsible": "آشا بالتعاون مع المركز السعودي للتدريب الصحي و المعهد الوطني للسلامة والصحة المهنية "
+    },
+    {
+        "id": 11,
+        "category": "تقييم وتطوير إنتاج الأفلام التوعوية والتثقيفية",
+        "item": "تقييم وتطوير عمليات إنتاج أفلام توعوية وتثقيفية داعمة لمستهدفات النموذج التشغيلي تعكس القيم وتعزز الثقافة التنظيمية والاندماج الوظيفي والتوعية بخدمات الموارد البشرية والخدمات المقدمة للمستفيدين وأصحاب العلاقة.",
+        "unit": "دقيقة",
+        "qty1": 1000,
+        "qty2": 500,
+        "qty3": 500,
+        "responsible": "آشا بالتعاون مع المركز السعودي للتدريب الصحي و المعهد الوطني للسلامة والصحة المهنية "
+    }
+]
+
+        let tableData = []; 
+
+        const tableBody = document.getElementById('projectTableBody');
+        const resetDataButton = document.getElementById('resetDataButton');
+        const exportDataButton = document.getElementById('exportDataButton');
+        const exportModal = document.getElementById('exportModal');
+        const closeExportModalButton = document.getElementById('closeExportModalButton');
+        const exportDataTextArea = document.getElementById('exportDataTextArea');
+        const copyExportDataButton = document.getElementById('copyExportDataButton');
+        const copyStatus = document.getElementById('copyStatus');
+
+
+        function saveDataToLocalStorage() {
+            try {
+                localStorage.setItem('projectDataModV1', JSON.stringify(tableData));
+            } catch (error) {
+                console.error('Error saving data to localStorage:', error);
+            }
+        }
+
+        function loadDataFromLocalStorage() {
+            const savedData = localStorage.getItem('projectDataModV1');
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    if (parsedData && Array.isArray(parsedData) && parsedData.length === defaultTableData.length) {
+                        tableData = parsedData;
+                        return; 
+                    }
+                } catch (error) {
+                    console.error('Error loading data from localStorage:', error);
+                }
+            }
+            tableData = JSON.parse(JSON.stringify(defaultTableData));
+        }
+        
+        function handleResetData() {
+            if (confirm("هل أنت متأكد أنك تريد إعادة تعيين كافة البيانات إلى القيم الافتراضية؟ سيتم فقدان جميع التغييرات المحفوظة.")) {
+                localStorage.removeItem('projectDataModV1');
+                tableData = JSON.parse(JSON.stringify(defaultTableData)); 
+                populateTable(); 
+            }
+        }
+
+        function handleExportData() {
+            exportDataTextArea.value = JSON.stringify(tableData, null, 4); // Pretty print JSON
+            exportModal.style.display = "block";
+            copyStatus.style.display = "none";
+        }
+
+        function handleCloseExportModal() {
+            exportModal.style.display = "none";
+        }
+
+        function handleCopyExportData() {
+            exportDataTextArea.select();
+            exportDataTextArea.setSelectionRange(0, 99999); // For mobile devices
+            try {
+                document.execCommand('copy');
+                copyStatus.textContent = "تم النسخ بنجاح!";
+                copyStatus.style.display = "block";
+                setTimeout(() => { copyStatus.style.display = "none"; }, 2000);
+            } catch (err) {
+                copyStatus.textContent = "فشل النسخ. يرجى النسخ يدويًا.";
+                copyStatus.style.display = "block";
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+        }
+
+
+        function createCell(content, isEditable = false, customClasses = '', fieldName = null) {
+            const cell = document.createElement('td');
+            cell.textContent = content;
+            let baseClasses = 'px-3 py-3 border-b border-gray-200';
+            cell.className = `${baseClasses} ${customClasses}`;
+            
+            if (isEditable) {
+                cell.contentEditable = true;
+                cell.classList.add('editable-cell');
+                if (fieldName === 'responsible') {
+                    cell.classList.add('responsible-cell'); 
+                }
+                if (fieldName) {
+                    cell.dataset.field = fieldName;
+                }
+
+                 cell.addEventListener('blur', (event) => {
+                    const trElement = event.target.closest('tr');
+                    if (!trElement) return; 
+
+                    const rowIndex = Array.from(tableBody.children).indexOf(trElement);
+                    const field = event.target.dataset.field;
+
+                    if (rowIndex !== -1 && tableData[rowIndex] && field) {
+                        let newValue = event.target.textContent;
+                        
+                        if (field.startsWith('qty')) {
+                            const numValue = parseInt(newValue, 10);
+                            if (!isNaN(numValue)) {
+                                tableData[rowIndex][field] = numValue;
+                            } else {
+                                event.target.textContent = tableData[rowIndex][field]; 
+                            }
+                        } else {
+                            tableData[rowIndex][field] = newValue;
+                        }
+                        saveDataToLocalStorage(); 
+                    }
+                });
+            }
+            return cell;
+        }
+
+        function populateTable() {
+            tableBody.innerHTML = ''; 
+            tableData.forEach(rowData => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-[#E7F0FE]/50 transition-colors duration-150';
+
+                row.appendChild(createCell(rowData.id));
+                row.appendChild(createCell(rowData.category, false, 'text-[#12368F] font-medium'));
+                row.appendChild(createCell(rowData.item));
+                row.appendChild(createCell(rowData.unit));
+                row.appendChild(createCell(rowData.qty1, true, '', 'qty1')); 
+                row.appendChild(createCell(rowData.qty2, true, '', 'qty2')); 
+                row.appendChild(createCell(rowData.qty3, true, '', 'qty3')); 
+                row.appendChild(createCell(rowData.responsible, true, '', 'responsible')); 
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromLocalStorage();
+            populateTable();
+            if(resetDataButton) {
+                resetDataButton.addEventListener('click', handleResetData);
+            }
+            if(exportDataButton) {
+                exportDataButton.addEventListener('click', handleExportData);
+            }
+            if(closeExportModalButton) {
+                closeExportModalButton.addEventListener('click', handleCloseExportModal);
+            }
+            if(copyExportDataButton){
+                copyExportDataButton.addEventListener('click', handleCopyExportData);
+            }
+            // Close modal if user clicks outside of it
+            window.onclick = function(event) {
+                if (event.target == exportModal) {
+                    exportModal.style.display = "none";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
